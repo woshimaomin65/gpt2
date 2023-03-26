@@ -4,6 +4,7 @@ import yaml
 from argparse import Namespace
 from torch.utils.data.dataloader import DataLoader
 from utils.import_class import import_class
+from utils.tools import batch_end_callback
 #加载配置文件
 config = yaml.safe_load(open("conf/conf_mingpt.yml"))
 config = Namespace(**config)
@@ -25,7 +26,7 @@ test_sampler=torch.utils.data.RandomSampler(test_dataset, replacement=True, num_
 test_loader = DataLoader(test_dataset, **config.test_dataloader)
 #初始化训练框架
 trainer = import_class(**config.trainer)(model, train_loader, test_loader, **config.trainer["params"])
-
+trainer.set_callback('on_batch_end', batch_end_callback)
 #训练
 trainer.run()
 

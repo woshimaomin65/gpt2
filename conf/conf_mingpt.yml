@@ -21,7 +21,7 @@ train_dataloader:
     batch_size: 32
     pin_memory: False
     shuffle: False 
-    #num_workers: 2
+    num_workers: 4
 
 test_dataloader:
     batch_size: 32
