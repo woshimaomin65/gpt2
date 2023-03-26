@@ -1,34 +1,38 @@
 model:
-    model_path_or_name: 
+    module: model
+    classname: GPT
+    package: model_graph
+    is_from_pretrained: False
+    params: {"vocab_size": 3, "block_size": 11, "model_type": "gpt2"}
 
 train_dataset:
     module: dataset_for_mingpt
     classname: SortDataset
     package: dataloader 
-    params: {"split":"train", "length":6 "num_digis":3}
+    params: {"split":"train", "length":6, "num_digits":3}
 
 test_dataset:
     module: dataset_for_mingpt
     classname: SortDataset
     package: dataloader 
-    params: {"split":"test", "length":6 "num_digis":3}
+    params: {"split":"test", "length":6, "num_digits":3}
 
 train_dataloader:
     batch_size: 32
-    pin_memory: True
-    shuffleL: False 
-    num_workers: 2
+    pin_memory: False
+    shuffle: False 
+    #num_workers: 2
 
-eval_dataloader:
+test_dataloader:
     batch_size: 32
-    pin_memory: True
-    shuffleL: False 
-    num_workers: 2
+    pin_memory: False
+    shuffle: False 
    
 trainer:
     module: trainer
     classname: Trainer
     package: trainer 
-    max_iters: 1000
+    params:
+        max_iters: 1000
     
 

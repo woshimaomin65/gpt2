@@ -2,9 +2,9 @@ import importlib
 import pdb
 from pprint import pprint
 
-def import_class(module='', classname='', package=''):
-    module = importlib.import_module(f'{modulename}', package=package)
-    return getattr(module, class_name)
+def import_class(module='', classname='', package='', **kw):
+    module_instance = importlib.import_module(f'{package}.{module}')
+    return getattr(module_instance, classname)
 
 if __name__ == "__main__":
     import sys

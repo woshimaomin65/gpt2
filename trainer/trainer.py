@@ -2,12 +2,11 @@
 Simple training loop; Boilerplate that could apply to any arbitrary neural network,
 so nothing in this file really has anything to do with GPT specifically.
 """
-
+import pdb
 import time
 from collections import defaultdict
 
 import torch
-from torch.utils.data.dataloader import DataLoader
 from utils.tools import CfgNode as CN
 
 class Trainer:
@@ -28,21 +27,23 @@ class Trainer:
         C.grad_norm_clip = 1.0
         return C
 
-    def __init__(self, config, model, train_dataloader, eval_dataloader):
-        self.config = config
+    def __init__(self, model, train_dataloader, eval_dataloader, **params):
+
+        self.config = self.get_default_config()
+        self.config.merge_from_dict(params)
         self.model = model
         # 设置优化器
-        self.optimizer = model.configure_optimizers(config)
+        self.optimizer = model.configure_optimizers(self.config)
         # 数据集
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.callbacks = defaultdict(list)
 
         # determine the device we'll train on
-        if config.device == 'auto':
+        if self.config.device == 'auto':
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         else:
-            self.device = config.device
+            self.device = self.config.device
         self.model = self.model.to(self.device)
         print("running on device", self.device)
 
@@ -63,28 +64,17 @@ class Trainer:
 
     def run(self):
         model, config = self.model, self.config
-
-        # setup the dataloader
-        train_loader = DataLoader(
-            self.train_dataset,
-            sampler=torch.utils.data.RandomSampler(self.train_dataset, replacement=True, num_samples=int(1e10)),
-            shuffle=False,
-            pin_memory=True,
-            batch_size=config.batch_size,
-            num_workers=config.num_workers,
-        )
-
         model.train()
         self.iter_num = 0
         self.iter_time = time.time()
-        data_iter = iter(train_loader)
+        data_iter = iter(self.train_dataloader)
         while True:
 
             # fetch the next batch (x, y) and re-init iterator if needed
             try:
                 batch = next(data_iter)
             except StopIteration:
-                data_iter = iter(train_loader)
+                data_iter = iter(self.train_dataloader)
                 batch = next(data_iter)
             batch = [t.to(self.device) for t in batch]
             x, y = batch
