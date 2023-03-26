@@ -3,8 +3,12 @@ Ensure that we can load huggingface/transformer GPTs into minGPT
 """
 
 import unittest
+import pdb
 import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
+import os
+import sys
+sys.path.insert(0, './')
 from mingpt.model import GPT
 from mingpt.bpe import BPETokenizer
 # -----------------------------------------------------------------------------

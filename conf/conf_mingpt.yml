@@ -1,0 +1,34 @@
+model:
+    model_path_or_name: 
+
+train_dataset:
+    module: dataset_for_mingpt
+    classname: SortDataset
+    package: dataloader 
+    params: {"split":"train", "length":6 "num_digis":3}
+
+test_dataset:
+    module: dataset_for_mingpt
+    classname: SortDataset
+    package: dataloader 
+    params: {"split":"test", "length":6 "num_digis":3}
+
+train_dataloader:
+    batch_size: 32
+    pin_memory: True
+    shuffleL: False 
+    num_workers: 2
+
+eval_dataloader:
+    batch_size: 32
+    pin_memory: True
+    shuffleL: False 
+    num_workers: 2
+   
+trainer:
+    module: trainer
+    classname: Trainer
+    package: trainer 
+    max_iters: 1000
+    
+
