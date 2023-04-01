@@ -71,7 +71,8 @@ if __name__ == "__main__":
     config = Namespace(**config)
     if config.ddp_setup["is_ddp"]:
         world_size = torch.cuda.device_count()
-        config.ddp_setup["param"].update({"world_size": world_size})
+        config.ddp_setup["params"].update({"world_size": world_size})
+        pdb.set_trace()
         mp.spawn(main_ddp, args=(config), nprocs=world_size, join=True)
     else:
         main(config)    
