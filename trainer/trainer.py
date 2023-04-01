@@ -69,7 +69,6 @@ class Trainer:
         self.iter_time = time.time()
         data_iter = iter(self.train_dataloader)
         while True:
-
             # fetch the next batch (x, y) and re-init iterator if needed
             try:
                 batch = next(data_iter)
@@ -87,7 +86,6 @@ class Trainer:
             self.loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_norm_clip)
             self.optimizer.step()
-
             self.trigger_callbacks('on_batch_end')
             self.iter_num += 1
             tnow = time.time()
