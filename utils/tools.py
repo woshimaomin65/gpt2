@@ -11,7 +11,7 @@ import torch
 # -----------------------------------------------------------------------------
 
 def batch_end_callback(trainer):
-    if trainer.iter_num % 100 == 0:
+    if trainer.iter_num % 10 == 0:
         print(f"iter_dt {trainer.iter_dt * 1000:.2f}ms; iter {trainer.iter_num}: train loss {trainer.loss.item():.5f}")
 
 def set_seed(seed):

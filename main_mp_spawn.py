@@ -54,6 +54,7 @@ def main_ddp(rank, world_size, config):
     #加载模型
     if config.model["is_from_pretrained"]:
         model.from_pretrained(**config.model["params"])
+    print(f"gpu_id: {rank}")    
     model.to(rank) #ddp
     model = DDP(model, device_ids=[rank])  #ddp
     #加载训练数据
@@ -69,7 +70,11 @@ def main_ddp(rank, world_size, config):
     if rank == 0:
         trainer.set_callback('on_batch_end', batch_end_callback)
     #训练
-    trainer.run()
+    try:
+        trainer.run()
+    except:
+        cleanup()    
+    cleanup()    
 
 if __name__ == "__main__":
     #加载配置文件
