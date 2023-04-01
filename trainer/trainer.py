@@ -35,13 +35,14 @@ class Trainer:
         # 设置优化器
         if is_ddp:
             self.optimizer = model.module.configure_optimizers(self.config) #ddp
-        self.optimizer = model.configure_optimizers(self.config)
+        else:
+            self.optimizer = model.configure_optimizers(self.config)
         # 数据集
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.callbacks = defaultdict(list)
 
-        if is_ddp:
+        if not is_ddp:
             # determine the device we'll train on
             if self.config.device == 'auto':
                 self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -49,6 +50,8 @@ class Trainer:
                 self.device = self.config.device
             self.model = self.model.to(self.device)
             print("running on device", self.device)
+        else:
+            self.device="cuda"
 
         # variables that will be assigned to trainer class later for logging and etc
         self.iter_num = 0
