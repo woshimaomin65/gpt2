@@ -40,7 +40,7 @@ def main():
     test_sampler=torch.utils.data.RandomSampler(test_dataset, replacement=True, num_samples=int(1e10))
     test_loader = DataLoader(test_dataset, **config.test_dataloader)
     #初始化训练框架
-    trainer = import_class(**config.trainer)(model, train_loader, test_loader, **config.trainer["params"])
+    trainer = import_class(**config.trainer)(model, train_loader, test_loader, is_ddp=False, **config.trainer["params"])
     trainer.set_callback('on_batch_end', batch_end_callback)
     #训练
     trainer.run()
@@ -53,6 +53,7 @@ def main_ddp():
     #加载模型
     if config.model["is_from_pretrained"]:
         model.from_pretrained(**config.model["params"])
+    model.to(rank) #ddp
     model = DDP(model, device_id=[rank])  #ddp
     #加载训练数据
     train_dataset = import_class(**config.train_dataset)(**config.train_dataset["params"])
@@ -63,7 +64,7 @@ def main_ddp():
     test_sampler=torch.utils.data.RandomSampler(test_dataset, replacement=True, num_samples=int(1e10))
     test_loader = DataLoader(test_dataset, **config.test_dataloader)
     #初始化训练框架
-    trainer = import_class(**config.trainer)(model, train_loader, test_loader, **config.trainer["params"])
+    trainer = import_class(**config.trainer)(model, train_loader, test_loader, is_ddp=True **config.trainer["params"])
 
 if __name__ == "__main__":
     #加载配置文件

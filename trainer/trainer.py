@@ -27,25 +27,28 @@ class Trainer:
         C.grad_norm_clip = 1.0
         return C
 
-    def __init__(self, model, train_dataloader, eval_dataloader, **params):
+    def __init__(self, model, train_dataloader, eval_dataloader, is_ddp=False, **params):
 
         self.config = self.get_default_config()
         self.config.merge_from_dict(params)
         self.model = model
         # 设置优化器
+        if is_ddp:
+            self.optimizer = model.module.configure_optimizers(self.config) #ddp
         self.optimizer = model.configure_optimizers(self.config)
         # 数据集
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.callbacks = defaultdict(list)
 
-        # determine the device we'll train on
-        if self.config.device == 'auto':
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        else:
-            self.device = self.config.device
-        self.model = self.model.to(self.device)
-        print("running on device", self.device)
+        if is_ddp:
+            # determine the device we'll train on
+            if self.config.device == 'auto':
+                self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            else:
+                self.device = self.config.device
+            self.model = self.model.to(self.device)
+            print("running on device", self.device)
 
         # variables that will be assigned to trainer class later for logging and etc
         self.iter_num = 0
