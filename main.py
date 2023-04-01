@@ -22,7 +22,7 @@ def ddp_setup(rank=0, world_size=1, **kw):
 def cleanup():
     destroy_process_group()
 
-def main():
+def main(config):
     #加载配置文件
     config = yaml.safe_load(open("conf/conf_mingpt.yml"))
     config = Namespace(**config)
@@ -45,8 +45,9 @@ def main():
     #训练
     trainer.run()
 
-def main_ddp():
+def main_ddp(rank, config):
     #是否需要ddp
+    config = Namespace(**config)
     rank = ddp_setup(**config.ddp_setup["params"]) #ddp
     #初始化模型 tokenizer， model_class
     model = import_class(**config.model)(**config.model["params"])
@@ -54,7 +55,7 @@ def main_ddp():
     if config.model["is_from_pretrained"]:
         model.from_pretrained(**config.model["params"])
     model.to(rank) #ddp
-    model = DDP(model, device_id=[rank])  #ddp
+    model = DDP(model, device_ids=[rank])  #ddp
     #加载训练数据
     train_dataset = import_class(**config.train_dataset)(**config.train_dataset["params"])
     train_sampler=torch.utils.data.RandomSampler(train_dataset, replacement=True, num_samples=int(1e10))
