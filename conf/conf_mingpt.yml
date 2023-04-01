@@ -1,3 +1,8 @@
+ddp_setup:
+    is_ddp: True
+    params:
+       rank: 0
+
 model:
     module: model
     classname: GPT
