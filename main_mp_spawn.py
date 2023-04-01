@@ -2,7 +2,6 @@ import pdb
 import os
 import torch
 import yaml
-from pprint import pprint
 from argparse import Namespace
 from utils.import_class import import_class
 from torch.utils.data.dataloader import DataLoader
@@ -12,8 +11,9 @@ import torch.multiprocessing as mp #ddp
 from torch.utils.data import DistributedSampler #ddp
 from torch.distributed import init_process_group, destroy_process_group #ddp
 from torch.nn.parallel import DistributedDataParallel as DDP   #ddp
+#ddp
 
-def ddp_setup(rank=0, world_size=1, **kw):
+def ddp_setup(rank, world_size=1, **kw):
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = '12355'
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
@@ -44,12 +44,10 @@ def main(config):
     #训练
     trainer.run()
 
-def main_ddp(rank, config):
+def main_ddp(rank, world_size, config):
     #是否需要ddp
-    world_size = torch.cuda.device_count()
-    config.ddp_setup["params"].update({"world_size": world_size, "rank": rank})
-    pprint(config.ddp_setup["params"])
     config = Namespace(**config)
+    config.ddp_setup["params"].update({"world_size": world_size, "rank": rank})
     ddp_setup(**config.ddp_setup["params"]) #ddp
     #初始化模型 tokenizer， model_class
     model = import_class(**config.model)(**config.model["params"])
@@ -68,7 +66,8 @@ def main_ddp(rank, config):
     test_loader = DataLoader(test_dataset, **config.test_dataloader)
     #初始化训练框架
     trainer = import_class(**config.trainer)(model, train_loader, test_loader, is_ddp=True, **config.trainer["params"])
-    trainer.set_callback('on_batch_end', batch_end_callback)
+    if rank == 0:
+        trainer.set_callback('on_batch_end', batch_end_callback)
     #训练
     trainer.run()
 
@@ -78,6 +77,7 @@ if __name__ == "__main__":
     config = Namespace(**config)
     if config.ddp_setup["is_ddp"]:
         config=vars(config)
-        mp.spawn(main_ddp, args=(config,), nprocs=world_size, join=True)
+        world_size = torch.cuda.device_count()
+        mp.spawn(main_ddp, args=(world_size, config,), nprocs=world_size, join=True)
     else:
         main(config)    
