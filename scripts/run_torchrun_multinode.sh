@@ -1,0 +1,1 @@
+torchrun --nnodes=2 --nproc_per_node=gpu --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=192.168.1.1:29400  main_torchrun.py
